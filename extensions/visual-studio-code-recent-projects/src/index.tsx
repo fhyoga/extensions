@@ -1,10 +1,13 @@
 import { ActionPanel, Icon, List, showToast, Action, Toast } from "@raycast/api";
-import { basename, dirname } from "path";
+import { basename, dirname,relative } from "path";
 import { useEffect, useState } from "react";
 import tildify from "tildify";
 import { fileURLToPath } from "url";
 import { build, getRecentEntries } from "./db";
 import { EntryLike, isFileEntry, isFolderEntry, isRemoteEntry, isWorkspaceEntry, RemoteEntry } from "./types";
+import { preferences } from "./preferences";
+const wdsArr=preferences.wds.split(",");
+console.log(preferences,wdsArr)
 
 const appKeyMapping = {
   Code: "com.microsoft.VSCode",
@@ -32,6 +35,7 @@ export default function Command() {
       message: error,
     });
   }
+  console.log(entries);
 
   return (
     <List searchBarPlaceholder="Search recent projects..." isLoading={isLoading}>
@@ -42,7 +46,14 @@ export default function Command() {
       </List.Section>
 
       <List.Section title="Folders">
-        {entries.filter(isFolderEntry).map((entry) => (
+      {entries.filter(isFolderEntry).filter((entry)=>{
+          // console.log(entry,preferences)
+          
+          // return true
+          return wdsArr.some(wds=>{
+            // console.log(entry.folderUri.slice(7),wds,relative(entry.folderUri.slice(7),wds)==='..')
+            return relative(entry.folderUri.slice(7),wds)==='..'})
+        }).map((entry) => (
           <LocalListItem key={entry.folderUri} uri={entry.folderUri} />
         ))}
       </List.Section>
